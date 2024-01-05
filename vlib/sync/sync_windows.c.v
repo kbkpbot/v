@@ -12,6 +12,8 @@ fn C.GetSystemTimeAsFileTime(lpSystemTimeAsFileTime &C._FILETIME)
 fn C.InitializeConditionVariable(voidptr)
 fn C.WakeConditionVariable(voidptr)
 fn C.SleepConditionVariableSRW(voidptr, voidptr, u32, u32) int
+fn C.TryAcquireSRWLockExclusive(voidptr) int
+fn C.TryAcquireSRWLockShared(voidptr) int
 
 // TODO: The suggestion of using CriticalSection instead of mutex
 // was discussed. Needs consideration.
