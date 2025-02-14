@@ -268,3 +268,9 @@ fn test_int_max() {
 	assert int_max(-5, 5) == 5
 	assert int_max(5, -5) == 5
 }
+
+fn test_is_valid_utf8() {
+	assert '测试txt'.bytes().is_valid_utf8()
+	// ANSI encoding of string '测试txt'
+	assert [u8(0xbe), 0xe2, 0xca, 0x74, 0x78, 0x74].is_valid_utf8() == false
+}

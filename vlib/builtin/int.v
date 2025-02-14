@@ -563,6 +563,38 @@ pub fn (b []u8) byterune() !rune {
 	return rune(r)
 }
 
+// is_valid_utf8 checks whether a sequence of bytes
+// is a utf8 string or not
+@[direct_array_access]
+pub fn (b []u8) is_valid_utf8() bool {
+	mut i := 0
+	for i < b.len {
+		c := b[i]
+		if c <= 0x7F { // single character (0xxxxxxx)
+			i++
+		} else if (c & 0xE0) == 0xC0 { // 2 characters (110xxxxx)
+			if i + 1 >= b.len || (b[i + 1] & 0xC0) != 0x80 {
+				return false
+			}
+			i += 2
+		} else if (c & 0xF0) == 0xE0 { // 3 characters (1110xxxx)
+			if i + 2 >= b.len || (b[i + 1] & 0xC0) != 0x80 || (b[i + 2] & 0xC0) != 0x80 {
+				return false
+			}
+			i += 3
+		} else if (c & 0xF8) == 0xF0 { // 4 characters (11110xxx)
+			if i + 3 >= b.len || (b[i + 1] & 0xC0) != 0x80 || (b[i + 2] & 0xC0) != 0x80
+				|| (b[i + 3] & 0xC0) != 0x80 {
+				return false
+			}
+			i += 4
+		} else {
+			return false // invalid start byte
+		}
+	}
+	return true
+}
+
 // repeat returns a new string with `count` number of copies of the byte it was called on.
 pub fn (b u8) repeat(count int) string {
 	if count <= 0 {
