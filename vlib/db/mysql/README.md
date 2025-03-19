@@ -41,23 +41,40 @@ more user friendly errors for that situation.
 import db.mysql
 
 // Create connection
-mut connection := mysql.Connection{
-	username: 'root'
-	dbname:   'mysql'
+import db.mysql
+
+// Create connection
+config := mysql.Config{
+        host:     '127.0.0.1'
+        port:     3306
+        username: 'root'
+        password: ''
+        dbname:   'users'
 }
+
 // Connect to server
-connection.connect()?
-// Change the default database
-connection.select_db('db_users')?
+mut db := mysql.connect(config)!
 // Do a query
-get_users_query_result := connection.query('SELECT * FROM users')?
-// Get the result as maps
-for user in get_users_query_result.maps() {
-	// Access the name of user
-	println(user['name'])
-}
-// Free the query result
-get_users_query_result.free()
+res := db.query('select * from users')!
+response := res.rows()
+assert response[0].vals[1] == 'jackson'
 // Close the connection if needed
-connection.close()
+db.close()
+```
+
+## SSL Connection
+
+```v oksyntax
+// Create ssl connection
+config := mysql.Config{
+        host:     '127.0.0.1'
+        port:     3306
+        username: 'root'
+        password: ''
+        dbname:   'users'
+		
+		// To enable ssl connection, you must specify the .client_ssl flag
+		ssl_ca : './client-cert.pem'
+		flag:     .client_ssl | .client_ssl_verify_server_cert
+}
 ```
