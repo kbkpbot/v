@@ -8,13 +8,9 @@ fn f[T]() u32 {
 }
 
 fn test_generic_fn_variable() {
-	r1 := f[int]()
+	r1 := f[i32]()
 	println(r1)
-	assert r1 == $if new_int ? && x64 {
-		8
-	} $else {
-		4
-	}
+	assert r1 == 4
 
 	r2 := f[string]()
 	println(r2)

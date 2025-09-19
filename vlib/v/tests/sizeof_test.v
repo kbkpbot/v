@@ -21,10 +21,10 @@ fn test_sizeof() {
 	// depends on -m32/64
 	assert sizeof(S1) in [u32(4), 8]
 	s := S2{}
-	assert sizeof(s.i) == $if new_int ? && x64 {
-		8
+	$if new_int ? && x64 {
+		assert sizeof(s.i) == 8
 	} $else {
-		4
+		assert sizeof(s.i) == 4
 	}
 	assert sizeof(flag.Flag) > 4
 

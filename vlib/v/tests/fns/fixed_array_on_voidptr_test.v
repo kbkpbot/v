@@ -1,9 +1,9 @@
 fn test_main() {
-	mut b := [2]int{}
+	mut b := [2]i32{}
 	b[0] = 1
 	b[1] = 2
-	mut a := unsafe { memdup(b, $if new_int ? && x64 { 16 } $else { 8 }) }
-	x := &int(a)
+	mut a := unsafe { memdup(b, 8) }
+	x := &i32(a)
 	unsafe {
 		assert x[0] == 1
 		assert x[1] == 2
