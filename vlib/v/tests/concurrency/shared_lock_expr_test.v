@@ -100,9 +100,11 @@ fn test_shared_lock_array_index_expr() {
 
 fn test_shared_lock_array_slice_expr() {
 	// Test slicing shared arrays in rlock expressions (fixes issue #26663)
+	// Note: slicing a shared array automatically clones for safety,
+	// since a slice is a view over the same memory buffer.
 	shared a := ['a', 'b', 'c', 'd']
 
-	// Basic slice
+	// Basic slice - implicit clone happens (safe independent copy)
 	slice1 := lock {
 		a[1..3]
 	}
@@ -142,6 +144,18 @@ fn test_shared_lock_array_slice_expr() {
 	assert slice5[0] == 2
 	assert slice5[1] == 3
 	assert slice5[2] == 4
+
+	// Explicit clone - same behavior, no warning
+	slice6 := lock {
+		a[1..3].clone()
+	}
+	assert slice6 == ['b', 'c']
+
+	// Unsafe block - get a view (user takes responsibility)
+	slice7 := lock {
+		unsafe { a[1..3] }
+	}
+	assert slice7 == ['b', 'c']
 }
 
 struct DummySt {
