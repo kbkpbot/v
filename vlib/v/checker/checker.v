@@ -5529,12 +5529,13 @@ fn (mut c Checker) index_expr(mut node ast.IndexExpr) ast.Type {
 		}
 		// array[1..2] => array
 		// fixed_array[1..2] => array
+		// shared array[1..2] => array (slicing creates a new non-shared array)
 		if typ_sym.kind == .array_fixed {
 			elem_type := c.table.value_type(typ)
 			idx := c.table.find_or_register_array(elem_type)
 			typ = ast.new_type(idx)
 		} else {
-			typ = typ.set_nr_muls(0)
+			typ = typ.set_nr_muls(0).clear_flag(.shared_f)
 		}
 	} else { // [1]
 		if typ_sym.kind == .map {
