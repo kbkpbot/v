@@ -616,8 +616,9 @@ fn (mut g Gen) c_fn_name(node &ast.FnDecl) string {
 			concrete_types := g.get_anon_fn_concrete_types(g.anon_fn)
 			for i, gen_name in node.generic_names {
 				if i < concrete_types.len {
-					concrete_styp := g.styp(concrete_types[i])
-					name = name.replace('__${gen_name}', '__${concrete_styp}')
+					concrete_styp := g.generic_styp(concrete_types[i])
+					// Use lowercase gen_name since fn_type_signature uses to_lower_ascii()
+					name = name.replace('__${gen_name.to_lower_ascii()}', '__${concrete_styp}')
 				}
 			}
 		}
@@ -668,6 +669,13 @@ fn (mut g Gen) get_anon_fn_concrete_types(node ast.AnonFn) []ast.Type {
 	return g.cur_concrete_types
 }
 
+// generic_styp returns a sanitized type name suitable for use in C identifiers.
+// It escapes pointer characters (*) as __ptr__ to produce valid C symbol names.
+fn (mut g Gen) generic_styp(typ ast.Type) string {
+	return strings.repeat_string('__ptr__', typ.nr_muls()) +
+		g.styp(typ.set_nr_muls(0)).replace(' ', '_')
+}
+
 fn (mut g Gen) gen_closure_fn_name(node ast.AnonFn) string {
 	mut fn_name := node.decl.name
 	if node.decl.generic_names.len > 0 {
@@ -675,8 +683,9 @@ fn (mut g Gen) gen_closure_fn_name(node ast.AnonFn) string {
 		// Replace generic type names in the function name with concrete types
 		for i, gen_name in node.decl.generic_names {
 			if i < concrete_types.len {
-				concrete_styp := g.styp(concrete_types[i])
-				fn_name = fn_name.replace('__${gen_name}', '__${concrete_styp}')
+				concrete_styp := g.generic_styp(concrete_types[i])
+				// Use lowercase gen_name since fn_type_signature uses to_lower_ascii()
+				fn_name = fn_name.replace('__${gen_name.to_lower_ascii()}', '__${concrete_styp}')
 			}
 		}
 		// Add the generic suffix
@@ -695,8 +704,9 @@ fn (mut g Gen) closure_ctx(node ast.FnDecl, concrete_types []ast.Type) string {
 		// Replace generic type names in the function name with concrete types
 		for i, gen_name in node.generic_names {
 			if i < types.len {
-				concrete_styp := g.styp(types[i])
-				fn_name = fn_name.replace('__${gen_name}', '__${concrete_styp}')
+				concrete_styp := g.generic_styp(types[i])
+				// Use lowercase gen_name since fn_type_signature uses to_lower_ascii()
+				fn_name = fn_name.replace('__${gen_name.to_lower_ascii()}', '__${concrete_styp}')
 			}
 		}
 		// Add the generic suffix
