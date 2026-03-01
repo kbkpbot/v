@@ -79,13 +79,14 @@ fn run_new_generic_solver_tests(root_label string, test_cmd string, expected_sum
 	println('')
 }
 
-const expected_summsvc_generics = 'Summary for all V _test.v files: 53 failed, 209 passed, 262 total.'
-const expected_summary_generics = 'Summary for all V _test.v files: 52 failed, 210 passed, 262 total.'
+const expected_summsvc_generics = 'Summary for all V _test.v files: 54 failed, 209 passed, 263 total.'
+const expected_summary_generics = 'Summary for all V _test.v files: 53 failed, 210 passed, 263 total.'
 const expected_summsvc_vec = 'Summary for all V _test.v files: 3 failed, 3 total.'
 const expected_summary_vec = 'Summary for all V _test.v files: 3 failed, 3 total.'
 const expected_summsvc_flag = 'Summary for all V _test.v files: 14 failed, 5 passed, 19 total.'
 const expected_summary_flag = 'Summary for all V _test.v files: 14 failed, 5 passed, 19 total.'
 const failing_tests = [
+	'vlib/v/tests/generics/generics_closure_type_params_test.v',
 	'vlib/v/tests/generics/concrete_type_as_generic_fn_type_1_test.v',
 	'vlib/v/tests/generics/default_type_with_ref_test.v',
 	'vlib/v/tests/generics/generic_alias_callback_test.v',
