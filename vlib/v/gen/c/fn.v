@@ -609,16 +609,21 @@ fn (mut g Gen) c_fn_name(node &ast.FnDecl) string {
 	}
 
 	if node.generic_names.len > 0 {
-		// For closure functions, replace generic type names in the function name with concrete types
-		// This is needed because closure function names are generated in the parser phase
-		// with generic type names, but we need concrete types in the C code
-		if node.is_anon && node.is_closure && g.anon_fn != unsafe { nil } {
+		// For anonymous functions (including lambdas), replace generic type names
+		// in the function name with concrete types.
+		// This is needed because anonymous function names are generated in the
+		// parser/checker phase with generic type names, but we need concrete
+		// types in the C code.
+		// Note: we use a sanitized form of the type name, similar to generic_fn_name,
+		// to handle pointer types correctly (e.g., &Foo -> __ptr__Foo instead of Foo*)
+		if node.is_anon && g.anon_fn != unsafe { nil } {
 			concrete_types := g.get_anon_fn_concrete_types(g.anon_fn)
 			for i, gen_name in node.generic_names {
 				if i < concrete_types.len {
-					concrete_styp := g.generic_styp(concrete_types[i])
-					// Use lowercase gen_name since fn_type_signature uses to_lower_ascii()
-					name = name.replace('__${gen_name.to_lower_ascii()}', '__${concrete_styp}')
+					typ := concrete_types[i]
+					concrete_styp := strings.repeat_string('__ptr__', typ.nr_muls()) +
+						g.styp(typ.set_nr_muls(0)).replace(' ', '_')
+					name = name.replace('__${gen_name}', '__${concrete_styp}')
 				}
 			}
 		}
@@ -669,23 +674,18 @@ fn (mut g Gen) get_anon_fn_concrete_types(node ast.AnonFn) []ast.Type {
 	return g.cur_concrete_types
 }
 
-// generic_styp returns a sanitized type name suitable for use in C identifiers.
-// It escapes pointer characters (*) as __ptr__ to produce valid C symbol names.
-fn (mut g Gen) generic_styp(typ ast.Type) string {
-	return strings.repeat_string('__ptr__', typ.nr_muls()) +
-		g.styp(typ.set_nr_muls(0)).replace(' ', '_')
-}
-
 fn (mut g Gen) gen_closure_fn_name(node ast.AnonFn) string {
 	mut fn_name := node.decl.name
 	if node.decl.generic_names.len > 0 {
 		concrete_types := g.get_anon_fn_concrete_types(node)
 		// Replace generic type names in the function name with concrete types
+		// Use sanitized type names to handle pointer types correctly
 		for i, gen_name in node.decl.generic_names {
 			if i < concrete_types.len {
-				concrete_styp := g.generic_styp(concrete_types[i])
-				// Use lowercase gen_name since fn_type_signature uses to_lower_ascii()
-				fn_name = fn_name.replace('__${gen_name.to_lower_ascii()}', '__${concrete_styp}')
+				typ := concrete_types[i]
+				concrete_styp := strings.repeat_string('__ptr__', typ.nr_muls()) +
+					g.styp(typ.set_nr_muls(0)).replace(' ', '_')
+				fn_name = fn_name.replace('__${gen_name}', '__${concrete_styp}')
 			}
 		}
 		// Add the generic suffix
@@ -702,11 +702,13 @@ fn (mut g Gen) closure_ctx(node ast.FnDecl, concrete_types []ast.Type) string {
 	if node.generic_names.len > 0 {
 		types := if concrete_types.len > 0 { concrete_types } else { g.cur_concrete_types }
 		// Replace generic type names in the function name with concrete types
+		// Use sanitized type names to handle pointer types correctly
 		for i, gen_name in node.generic_names {
 			if i < types.len {
-				concrete_styp := g.generic_styp(types[i])
-				// Use lowercase gen_name since fn_type_signature uses to_lower_ascii()
-				fn_name = fn_name.replace('__${gen_name.to_lower_ascii()}', '__${concrete_styp}')
+				typ := types[i]
+				concrete_styp := strings.repeat_string('__ptr__', typ.nr_muls()) +
+					g.styp(typ.set_nr_muls(0)).replace(' ', '_')
+				fn_name = fn_name.replace('__${gen_name}', '__${concrete_styp}')
 			}
 		}
 		// Add the generic suffix

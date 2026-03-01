@@ -191,7 +191,7 @@ pub fn (t &Table) fn_type_signature(f &Fn) string {
 		opt := if f.return_type.has_flag(.option) { 'option_' } else { '' }
 		res := if f.return_type.has_flag(.result) { 'result_' } else { '' }
 
-		sig += '__${opt}${res}${sym.cname.to_lower_ascii()}'
+		sig += '__${opt}${res}${sym.cname}'
 	}
 	return sig
 }
